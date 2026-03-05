@@ -116,21 +116,22 @@ def setup():
                                 ).classes('flex-1').props('outlined dense')
                                 
                                 id_det = int(row['id_detalle'])
+                                id_cns = int(row['id_concesion'])
                                 id_cli = int(row['id_cliente'])
                                 id_prod = int(row['id_producto'])
                                 cant = int(row['cantidad'])
                                 
-                                async def cobrar(id_d=id_det, id_c=id_cli, id_p=id_prod, c=cant, p=precio_input):
+                                async def cobrar(id_d=id_det, id_c=id_cli, id_p=id_prod, c=cant, p=precio_input, cns=id_cns):
                                     try:
-                                        db.procesar_concesion_cobrar(id_d, id_c, id_p, c, float(p.value))
+                                        db.procesar_concesion_cobrar(id_d, id_c, id_p, c, float(p.value), cns)
                                         ui.notify('✅ Cobro registrado', type='positive')
                                         ui.navigate.to('/concesiones')
                                     except Exception as e:
                                         ui.notify(f'Error: {e}', type='negative')
                                 
-                                async def devolver(id_d=id_det, id_p=id_prod, c=cant):
+                                async def devolver(cns=id_cns, id_p=id_prod, c=cant):
                                     try:
-                                        db.procesar_concesion_devolver(id_d, id_p, c)
+                                        db.procesar_concesion_devolver(cns, id_p, c)
                                         ui.notify('✅ Devolución registrada', type='positive')
                                         ui.navigate.to('/concesiones')
                                     except Exception as e:

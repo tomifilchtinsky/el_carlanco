@@ -322,7 +322,7 @@ def get_concesiones_pendientes():
             SELECT 
                 dc.id_detalle, dc.id_concesion, dc.id_producto,
                 p.nombre AS producto, m.nombre AS marca,
-                dc.cantidad, dc.estado, dc.precio_venta,
+                dc.cantidad, c.estado, p.precio_venta,
                 c.id_cliente, cl.razon_social AS cliente,
                 TO_CHAR(c.fecha, 'DD/MM/YY') AS fecha,
                 EXTRACT(DAY FROM NOW() - c.fecha)::int AS dias
@@ -331,11 +331,11 @@ def get_concesiones_pendientes():
             JOIN productos p ON dc.id_producto = p.id_producto
             JOIN marcas m ON p.id_marca = m.id_marca
             JOIN clientes cl ON c.id_cliente = cl.id_cliente
-            WHERE dc.estado = 'PENDIENTE'
+            WHERE c.estado = 'PENDIENTE'
             ORDER BY c.fecha DESC
         """), conn)
 
-def procesar_concesion_cobrar(id_detalle, id_cliente, id_producto, cantidad, precio):
+def procesar_concesion_cobrar(id_detalle, id_cliente, id_producto, cantidad, precio, id_concesion):
     """Cobra una concesión: crea venta con es_concesion=TRUE."""
     with get_engine().begin() as conn:
         total = float(cantidad * precio)
@@ -352,24 +352,24 @@ def procesar_concesion_cobrar(id_detalle, id_cliente, id_producto, cantidad, pre
         """), {"idv": id_venta, "idp": id_producto, "cant": cantidad, "precio": precio})
         
         conn.execute(text("""
-            UPDATE detalle_concesiones 
-            SET estado = 'VENDIDO', precio_venta = :precio 
-            WHERE id_detalle = :id
-        """), {"id": id_detalle, "precio": precio})
+            UPDATE concesiones 
+            SET estado = 'VENDIDO'
+            WHERE id_concesion = :id
+        """), {"id": id_concesion})
 
-def procesar_concesion_devolver(id_detalle, id_producto, cantidad):
+def procesar_concesion_devolver(id_concesion, id_producto, cantidad):
     """Devuelve una concesión: mueve stock_concesion → stock_actual."""
     with get_engine().begin() as conn:
         conn.execute(text("""
             UPDATE productos 
             SET stock_actual = stock_actual + :cant,
-                stock_concesion = stock_concesion - :cant
+                stock_concesion = GREATEST(0, stock_concesion - :cant)
             WHERE id_producto = :id
         """), {"id": id_producto, "cant": cantidad})
         
         conn.execute(text("""
-            UPDATE detalle_concesiones SET estado = 'DEVUELTO' WHERE id_detalle = :id
-        """), {"id": id_detalle})
+            UPDATE concesiones SET estado = 'DEVUELTO' WHERE id_concesion = :id
+        """), {"id": id_concesion})
         
         conn.execute(text("""
             INSERT INTO inventario_movimientos (id_producto, tipo, cantidad, fecha)
@@ -384,7 +384,7 @@ def get_estado_concesiones():
                 cl.razon_social AS "Cliente",
                 p.nombre AS "Producto",
                 dc.cantidad AS "Cantidad",
-                dc.estado AS "Estado",
+                c.estado AS "Estado",
                 TO_CHAR(c.fecha, 'DD/MM/YY') AS "Fecha Entrega",
                 EXTRACT(DAY FROM NOW() - c.fecha)::int AS "Días"
             FROM detalle_concesiones dc
