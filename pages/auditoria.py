@@ -14,7 +14,7 @@ def setup():
             ui.label('🔍 Auditoría de Movimientos').classes('text-2xl font-bold')
             
             # Selector de período
-            periodos = {'7 días': 7, '15 días': 15, '30 días': 30, '60 días': 60, '90 días': 90}
+            periodos = {7: '7 días', 15: '15 días', 30: '30 días', 60: '60 días', 90: '90 días'}
             periodo_select = ui.select(periodos, value=30, label='Período').classes('w-48').props('outlined')
             
             content = ui.column().classes('w-full gap-4')

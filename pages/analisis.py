@@ -16,7 +16,7 @@ def setup():
             ui.label('📈 Análisis del Negocio').classes('text-2xl font-bold')
             
             # Selector de período
-            periodos = {'7 días': 7, '15 días': 15, '30 días': 30, '60 días': 60, '90 días': 90}
+            periodos = {7: '7 días', 15: '15 días', 30: '30 días', 60: '60 días', 90: '90 días'}
             periodo_select = ui.select(periodos, value=30, label='Período de análisis').classes('w-48').props('outlined')
             
             # Containers para contenido dinámico
