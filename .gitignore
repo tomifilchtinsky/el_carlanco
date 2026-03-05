@@ -1,0 +1,22 @@
+# Secrets y env
+.env
+.streamlit/secrets.toml
+.nicegui/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
